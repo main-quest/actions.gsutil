@@ -1,1 +1,1 @@
-Run any gsutil commands. Ex: "cp gs://asd <local file>"
+Run any gsutil commands. Ex: cp "gs://bucker/dir/*" "path/to/folder"
