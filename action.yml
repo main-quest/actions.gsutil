@@ -11,37 +11,37 @@ inputs:
 runs:
   using: "composite"
   steps:  
-      - name: Finding the project id
-        id: proj_id_finder
-        shell: bash
-        run: |
-          f=/tmp/a
-          key="${{ inputs.key }}"
-          echo "$key" > $f
-          prefix_simple="project_id"
-          prefix="\"$prefix_simple\": \""
+    - name: Finding the project id
+      id: proj_id_finder
+      shell: bash
+      run: |
+        f=/tmp/a
+        key="${{ inputs.key }}"
+        echo "$key" > $f
+        prefix_simple="project_id"
+        prefix="\"$prefix_simple\": \""
 
-          line=$(grep "$prefix" $f)
-          if [ -z "$line" ]; then
-            # We're dealing with a base64 string
-            echo Decoding base64 key
-            (echo "$key" | base64 -d > $f) || echo "decoding failed"
-          fi
-          
-          line=$(grep "$prefix" $f)
-          if [ -z "$line" ]; then
-            echo We couldn\'t find $prefix_simple string in the key file, nor in the decoded version of it. Trying without setting the project id...
-          else
-            # Remove prefix, double quotes, columns and commas, and new lines
-            project_id=$(echo "$line" | sed -e "s/$prefix_simple//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
-            echo ::set-output name=value::"$project_id"
-          fi
+        line=$(grep -F "$prefix" $f)
+        if [ -z "$line" ]; then
+          # We're dealing with a base64 string
+          echo Decoding base64 key
+          (echo "$key" | base64 -d > $f) || echo "decoding failed"
+        fi
+        
+        line=$(grep -F "$prefix" $f)
+        if [ -z "$line" ]; then
+          echo We couldn\'t find $prefix_simple string in the key file, nor in the decoded version of it. Trying without setting the project id...
+        else
+          # Remove prefix, double quotes, columns and commas, and new lines
+          project_id=$(echo "$line" | sed -e "s/$prefix_simple//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
+          echo ::set-output name=value::"$project_id"
+        fi
 
-      - name: Running gsutil command
-        uses: actions-hub/gcloud@master
-        env:
-          PROJECT_ID: ${{ steps.proj_id_finder.outputs.value }}
-          APPLICATION_CREDENTIALS: ${{ inputs.key }}
-        with:
-          args: ${{ inputs.do }}
-          cli: gsutil
+    - name: Running gsutil command
+      uses: actions-hub/gcloud@master
+      env:
+        PROJECT_ID: ${{ steps.proj_id_finder.outputs.value }}
+        APPLICATION_CREDENTIALS: ${{ inputs.key }}
+      with:
+        args: ${{ inputs.do }}
+        cli: gsutil
