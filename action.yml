@@ -37,7 +37,7 @@ runs:
             echo ::set-output name=value::$project_id
           fi
 
-      - name: Running gsuitil command
+      - name: Running gsutil command
         uses: actions-hub/gcloud@master
         env:
           PROJECT_ID: ${{ steps.proj_id_finder.outputs.value }}
