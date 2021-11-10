@@ -16,7 +16,7 @@ runs:
       shell: bash
       run: |
         kf=$(mktemp)
-        echo "${{ inputs.gcs_key }}" > "$kf"
+        echo "${{ inputs.key }}" > "$kf"
         prefix="\"project_id\":"
 
         # Important to do this, as grep returns non-zero if no match is found
@@ -42,7 +42,7 @@ runs:
           echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from 
           project_id=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
 
-          echo [Debug] Set output
+          echo [Debug] Project id found: "$project_id"
           echo ::set-output name=value::"$project_id"
         fi
 
