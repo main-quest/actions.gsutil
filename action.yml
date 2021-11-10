@@ -15,25 +15,34 @@ runs:
       id: proj_id_finder
       shell: bash
       run: |
-        f=/tmp/a
-        key="${{ inputs.key }}"
-        echo "$key" > $f
-        prefix_simple="project_id"
-        prefix="\"$prefix_simple\": \""
+        kf=$(mktemp)
+        echo "${{ inputs.gcs_key }}" > "$kf"
+        prefix="\"project_id\":"
 
-        line=$(grep -F "$prefix" $f)
+        # Important to do this, as grep returns non-zero if no match is found
+        echo [Debug] Find project line in suppposedly non-encripted key
+        line=$(grep -F "$prefix" "$kf" || echo '')
+
+        echo [Debug] Test line
         if [ -z "$line" ]; then
-          # We're dealing with a base64 string
-          echo Decoding base64 key
-          (echo "$key" | base64 -d > $f) || echo "decoding failed"
+          # We are dealing with a base64 string, probably
+          echo [Debug] Decoding supposedly base64 key
+          f=$(mktemp)
+
+          echo [Debug] Decoding to $f
+          (cat "$kf" | base64 -d > "$f") || echo "decoding failed"
+
+          echo [Debug] Find project line in decripted key
+          line=$(grep -F "$prefix" $f || echo '')
         fi
         
-        line=$(grep -F "$prefix" $f)
         if [ -z "$line" ]; then
-          echo We couldn\'t find $prefix_simple string in the key file, nor in the decoded version of it. Trying without setting the project id...
+          echo [Debug] We couldn\'t find "$prefix" string in the key file, nor in the decoded version of it. Trying without setting the project id...
         else
-          # Remove prefix, double quotes, columns and commas, and new lines
-          project_id=$(echo "$line" | sed -e "s/$prefix_simple//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
+          echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from 
+          project_id=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
+
+          echo [Debug] Set output
           echo ::set-output name=value::"$project_id"
         fi
 
