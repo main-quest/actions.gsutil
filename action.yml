@@ -80,14 +80,15 @@ runs:
         echo "Write key to dir"
         key_path="$install_dir"/key.json
 
+        key="${{ inputs.key }}"
         if [[ ${{ steps.parser.outputs.key_is_encrypted }} == "true" ]]; then
-          echo ${{ inputs.key }} | base64 -d > "$key_path"
+          echo "$key" | base64 -d > "$key_path"
         else
-          echo ${{ inputs.key }} > "$key_path"
+          echo "$key" > "$key_path"
         fi
 
         echo "Get project id from previous step"
-        proj_id=${{ steps.parser.outputs.project_id }}
+        proj_id="${{ steps.parser.outputs.project_id }}"
 
         echo "Parse email"
         prefix="\"client_email\":"
@@ -112,7 +113,7 @@ runs:
         cmd_key="Credentials:gs_service_key_file=$inner_key_path"
         
         echo "Running: ${{ inputs.do }}"
-        ./gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ${{ inputs.do }}
+        ./gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "${{ inputs.do }}"
 
         echo "Deleting the install"
         # Exiting current dir to not cause troubles when deleting it
