@@ -111,7 +111,7 @@ runs:
         cmd_key="Credentials:gs_service_key_file=$inner_key_path"
         
         echo "Running: ${{ inputs.do }}"
-        ./gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "${{ inputs.do }}"
+        ./gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ${{ inputs.do }}
 
         echo "Deleting the install"
         # Exiting current dir to not cause troubles when deleting it
