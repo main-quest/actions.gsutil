@@ -7,12 +7,20 @@ inputs:
   do:
     description: Command to exec
     required: true
+
+outputs:
+  project: 
+    description: "The project id parsed from the key file"
+    value: ${{ steps.parser.outputs.project_id }}
+  email: 
+    description: "The email of the service account parsed from the key file"
+    value: ${{ steps.parser.outputs.project_id }}
     
 runs:
   using: "composite"
   steps:  
     - name: Finding the project id
-      id: proj_id_finder
+      id: parser
       shell: bash
       run: |
         kf=$(mktemp)
@@ -34,22 +42,88 @@ runs:
 
           echo [Debug] Find project line in decripted key
           line=$(grep -F "$prefix" $f || echo '')
+          
+          echo ::set-output name=key_is_encrypted::"true"
+        else
+          echo ::set-output name=key_is_encrypted::"false"
         fi
         
         if [ -z "$line" ]; then
           echo [Debug] We couldn\'t find "$prefix" string in the key file, nor in the decoded version of it. Trying without setting the project id...
         else
-          echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from 
+          echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from line 
           project_id=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
 
           echo [Debug] Project id found: "$project_id"
-          echo ::set-output name=value::"$project_id"
+          echo ::set-output name=project_id::"$project_id"
+
+          
         fi
 
-    - name: Running gsutil command
+    - name: Running gsutil command if OSX host
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        # Installing as per https://cloud.google.com/storage/docs/gsutil_install
+
+        echo "Installing in temp folder so we can simulate a docker image as much as we can (not affecting user environment too much)"
+        # Using 4.9 because starting with 5.0, Python 3 is needed, and most macOS have Python 2.7
+        file_name="gsutil_4.9.tar.gz"
+        url="https://storage.googleapis.com/pub/$file_name"
+        curl -O "$url"
+        install_dir=$(mktemp -d)
+        tar xfz "$file_name" -C "$install_dir"
+
+        echo "Entering install dir"
+        cd "$install_dir"/gsutil || exit 123
+
+        echo "Write key to dir"
+        key_path="$install_dir"/key.json
+
+        if [[ ${{ steps.parser.outputs.key_is_encrypted }} == "true" ]]; then
+          echo ${{ inputs.key }} | base64 -d > "$key_path"
+        else
+          echo ${{ inputs.key }} > "$key_path"
+        fi
+
+        echo "Get project id from previous step"
+        proj_id=${{ steps.parser.outputs.project_id }}
+
+        echo "Parse email"
+        prefix="\"client_email\":"
+        line=$(grep -F "$prefix" "$key_path" || echo '')
+        echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from line
+        email=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
+        echo "Email is $email"
+        
+        echo "Parse PK"
+        prefix="\"private_key\":"
+        line=$(grep -F "$prefix" "$key_path" || echo '')
+        echo [Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!)
+        pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g')
+
+        echo "Write PK to file"
+        inner_key_path="$install_dir"/key-inner.json
+        printf "%b" "$pk" > "$inner_key_path"
+
+        echo "Override credentials inline"
+        cmd_proj="GSUtil:default_project_id=$proj_id"
+        cmd_email="Credentials:gs_service_client_id=$email"
+        cmd_key="Credentials:gs_service_key_file=$inner_key_path"
+        
+        echo "Running: ${{ inputs.do }}"
+        ./gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ${{ inputs.do }}
+
+        echo "Deleting the install"
+        # Exiting current dir to not cause troubles when deleting it
+        cd ../.. || true
+        rm -r "$install_dir"
+
+    - name: Running gsutil command if non-OSX host
+      if: runner.os != 'macOS'
       uses: actions-hub/gcloud@master
       env:
-        PROJECT_ID: ${{ steps.proj_id_finder.outputs.value }}
+        PROJECT_ID: ${{ steps.parser.outputs.project_id }}
         APPLICATION_CREDENTIALS: ${{ inputs.key }}
       with:
         args: ${{ inputs.do }}
