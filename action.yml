@@ -28,36 +28,34 @@ runs:
         prefix="\"project_id\":"
 
         # Important to do this, as grep returns non-zero if no match is found
-        echo [Debug] Find project line in suppposedly non-encripted key
+        echo "[Debug] Find project line in suppposedly non-encripted key"
         line=$(grep -F "$prefix" "$kf" || echo '')
 
-        echo [Debug] Test line
+        echo "[Debug] Test line"
         if [ -z "$line" ]; then
           # We are dealing with a base64 string, probably
-          echo [Debug] Decoding supposedly base64 key
+          echo "[Debug] Decoding supposedly base64 key"
           f=$(mktemp)
 
-          echo [Debug] Decoding to $f
+          echo "[Debug] Decoding to $f"
           (cat "$kf" | base64 -d > "$f") || echo "decoding failed"
 
-          echo [Debug] Find project line in decripted key
-          line=$(grep -F "$prefix" $f || echo '')
+          echo "[Debug] Find project line in decripted key"
+          line=$(grep -F "$prefix" "$f" || echo '')
           
-          echo ::set-output name=key_is_encrypted::"true"
+          echo "::set-output name=key_is_encrypted::true"
         else
-          echo ::set-output name=key_is_encrypted::"false"
+          echo "::set-output name=key_is_encrypted::false"
         fi
         
         if [ -z "$line" ]; then
-          echo [Debug] We couldn\'t find "$prefix" string in the key file, nor in the decoded version of it. Trying without setting the project id...
+          echo "[Debug] We couldn\'t find \'$prefix\' string in the key file, nor in the decoded version of it. Trying without setting the project id..."
         else
-          echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from line 
+          echo "[Debug] Remove prefix, double quotes, columns and commas, and new lines from line"
           project_id=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
 
-          echo [Debug] Project id found: "$project_id"
-          echo ::set-output name=project_id::"$project_id"
-
-          
+          echo "[Debug] Project id found: $project_id"
+          echo "::set-output name=project_id::$project_id"
         fi
 
     - name: Running gsutil command if OSX host
@@ -93,14 +91,14 @@ runs:
         echo "Parse email"
         prefix="\"client_email\":"
         line=$(grep -F "$prefix" "$key_path" || echo '')
-        echo [Debug] Remove prefix, double quotes, columns and commas, and new lines from line
+        echo "[Debug] Remove prefix, double quotes, columns and commas, and new lines from line"
         email=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
         echo "Email is $email"
         
         echo "Parse PK"
         prefix="\"private_key\":"
         line=$(grep -F "$prefix" "$key_path" || echo '')
-        echo [Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!)
+        echo "[Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!)"
         pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g')
 
         echo "Write PK to file"
