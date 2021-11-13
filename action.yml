@@ -65,7 +65,8 @@ runs:
         # Storing current dir, as gsutil needs to be ran from it
         prev_working_dir="$(pwd)"
 
-        gsutil_user_directory="~/.gsutil"
+        # Important to not use quotes
+        gsutil_user_directory="$HOME/.gsutil"
         delete_gsutil_user_dir_after="false"
 
         if [ ! -f "$gsutil_user_directory" ]; then
