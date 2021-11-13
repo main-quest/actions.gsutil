@@ -65,6 +65,15 @@ runs:
         # Storing current dir, as gsutil needs to be ran from it
         prev_working_dir="$(pwd)"
 
+        gsutil_user_directory="~/.gsutil"
+        delete_gsutil_user_dir_after="false"
+
+        if [ ! -f "$gsutil_user_directory" ]; then
+          if [ ! -d "$gsutil_user_directory" ]; then
+            delete_gsutil_user_dir_after="true"
+          fi
+        fi
+
         # Installing as per https://cloud.google.com/storage/docs/gsutil_install
 
         echo "Installing in temp folder so we can simulate a docker image as much as we can (not affecting user environment too much)"
@@ -122,6 +131,11 @@ runs:
 
         echo "Deleting the install"
         rm -r "$install_dir"
+
+        if [ "$delete_gsutil_user_dir_after" == "true" ]; then
+          echo "Deleting the auto-created directory by gsutil that didn't previously exist: $gsutil_user_directory"
+          rm -r "$gsutil_user_directory"
+        fi
 
     - name: Running gsutil command if non-OSX host
       if: runner.os != 'macOS'
