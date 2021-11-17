@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 kf=$(mktemp)
 echo "$1" > "$kf"
 prefix="\"project_id\":"

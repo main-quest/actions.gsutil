@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 key="$1"
 key_is_encrypted="$2"
 project_id="$3"
@@ -21,8 +24,8 @@ fi
 # Installing as per https://cloud.google.com/storage/docs/gsutil_install
 
 echo "Installing in temp folder so we can simulate a docker image as much as we can (not affecting user environment too much)"
-# Using 4.9 because starting with 5.0, Python 3 is needed, and most macOS have Python 2.7
-file_name="gsutil_4.9.tar.gz"
+# file_name="gsutil_4.9.tar.gz"
+file_name="gsutil_5.5.tar.gz"
 url="https://storage.googleapis.com/pub/$file_name"
 curl -O "$url"
 install_dir=$(mktemp -d)
@@ -64,7 +67,7 @@ cmd_email="Credentials:gs_service_client_id=$email"
 cmd_key="Credentials:gs_service_key_file=$inner_key_path"
 
 echo "Exiting install dir and returning to working dir: $prev_working_dir"
-cd "$prev_working_dir"
+cd "$prev_working_dir" || exit 123
 
 echo "Running: $v_do"
 "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "$v_do"
