@@ -48,7 +48,7 @@ runs:
       shell: bash
       run: |
         key="${{ inputs.key }}"
-        key_is_encrypted="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
+        key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
         project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
         v_do="${{ inputs.do }}"
         
@@ -61,7 +61,7 @@ runs:
       shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         key="${{ inputs.key }}"
-        key_is_encrypted="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
+        key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
         project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
         v_do="${{ inputs.do }}"
         
