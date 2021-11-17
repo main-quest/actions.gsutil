@@ -82,13 +82,16 @@ echo "$gsutil_bin_dir"/gsutil
 echo "$cmd_proj"
 echo "$cmd_email"
 echo "$cmd_key"
+echo "1"
 "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
-echo "Second"
-"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "ls gs://gh-runs_main-quest_dbd-client-unity"
+echo "2"
+"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
+echo "3"
+"$gsutil_bin_dir"/gsutil -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
 exit 122
 
 echo "Running: $v_do"
-"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "$v_do"
+"$gsutil_bin_dir/gsutil -o $cmd_proj -o $cmd_email -o $cmd_key $v_do"
 
 
 echo "Deleting the install"
