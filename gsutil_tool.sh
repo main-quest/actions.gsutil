@@ -69,8 +69,13 @@ cmd_key="Credentials:gs_service_key_file=$inner_key_path"
 echo "Exiting install dir and returning to working dir: $prev_working_dir"
 cd "$prev_working_dir" || exit 123
 
+# test
+"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "ls gs://gh-runs_main-quest_dbd-client-unity"
+exit 122
+
 echo "Running: $v_do"
 "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "$v_do"
+
 
 echo "Deleting the install"
 rm -r "$install_dir"
