@@ -72,8 +72,9 @@ cd "$prev_working_dir" || exit 123
 
 echo "Running: $v_do"
 # Commented: found out gsutil 5.5 only needs the key (since email and project are derived from them)
-# "$gsutil_bin_dir/gsutil -o $cmd_proj -o $cmd_email -o $cmd_key $v_do"
-"$gsutil_bin_dir/gsutil -o $cmd_key $v_do"
+# Note: the last command is specifically left unquoted so that gsutil will pick all spaces
+# "$gsutil_bin_dir/gsutil" -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" $v_do
+"$gsutil_bin_dir/gsutil" -o "$cmd_key" $v_do
 
 
 echo "Deleting the install"
