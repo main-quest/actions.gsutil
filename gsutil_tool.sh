@@ -70,6 +70,11 @@ echo "Exiting install dir and returning to working dir: $prev_working_dir"
 cd "$prev_working_dir" || exit 123
 
 # test
+echo "$gsutil_bin_dir"/gsutil
+echo "$cmd_proj"
+echo "$cmd_email"
+echo "$cmd_key"
+"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
 "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "ls gs://gh-runs_main-quest_dbd-client-unity"
 exit 122
 
