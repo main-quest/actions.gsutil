@@ -11,16 +11,16 @@ inputs:
 outputs:
   project: 
     description: "The project id parsed from the key file"
-    value: ${{ steps.parser.outputs.project_id }}
-  email: 
-    description: "The email of the service account parsed from the key file"
-    value: ${{ steps.parser.outputs.project_id }}
+    value: ${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}
+  # email: 
+  #   description: "The email of the service account parsed from the key file"
+  #   value: ${{ steps.parser.outputs.project_id }}
     
 runs:
   using: "composite"
   steps:  
     - name: Parse key [UNIX]
-      id: parser
+      id: parser_unix
       if: runner.os != "Windows"
       shell: bash
       run: |
@@ -29,7 +29,7 @@ runs:
         "$s" "${{ inputs.key }}"
 
     - name: Parse key [WIN]
-      id: parser
+      id: parser_win
       if: runner.os == "Windows"
       shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
@@ -72,14 +72,15 @@ runs:
         key_path="$install_dir"/key.json
 
         key="${{ inputs.key }}"
-        if [[ ${{ steps.parser.outputs.key_is_encrypted }} == "true" ]]; then
+        key_is_encrypted="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
+        if [[ "$key_is_encrypted" == "true" ]]; then
           echo "$key" | base64 -d > "$key_path"
         else
           echo "$key" > "$key_path"
         fi
 
         echo "Get project id from previous step"
-        proj_id="${{ steps.parser.outputs.project_id }}"
+        project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
 
         echo "Parse email"
         prefix="\"client_email\":"
@@ -99,7 +100,7 @@ runs:
         printf "%b" "$pk" > "$inner_key_path"
 
         echo "Override credentials inline"
-        cmd_proj="GSUtil:default_project_id=$proj_id"
+        cmd_proj="GSUtil:default_project_id=$project_id"
         cmd_email="Credentials:gs_service_client_id=$email"
         cmd_key="Credentials:gs_service_key_file=$inner_key_path"
         
@@ -121,7 +122,7 @@ runs:
       if: runner.os != 'macOS'
       uses: actions-hub/gcloud@master
       env:
-        PROJECT_ID: ${{ steps.parser.outputs.project_id }}
+        PROJECT_ID: ${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}
         APPLICATION_CREDENTIALS: ${{ inputs.key }}
       with:
         args: ${{ inputs.do }}
