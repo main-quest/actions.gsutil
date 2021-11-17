@@ -19,46 +19,25 @@ outputs:
 runs:
   using: "composite"
   steps:  
-    - name: Finding the project id
+    - name: Parse key [UNIX]
       id: parser
+      if: runner.os != "Windows"
       shell: bash
       run: |
-        kf=$(mktemp)
-        echo "${{ inputs.key }}" > "$kf"
-        prefix="\"project_id\":"
+        s="${{ github.action_path }}/parser.sh"
+        chmod +x "$s"
+        "$s" "${{ inputs.key }}"
 
-        # Important to do this, as grep returns non-zero if no match is found
-        echo "[Debug] Find project line in suppposedly non-encripted key"
-        line=$(grep -F "$prefix" "$kf" || echo '')
+    - name: Parse key [WIN]
+      id: parser
+      if: runner.os == "Windows"
+      shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      run: |
+        s=$(wslpath "${{ github.action_path }}/parser.sh")
+        chmod +x "$s"
+        "$s" "${{ inputs.key }}"
 
-        echo "[Debug] Test line"
-        if [ -z "$line" ]; then
-          # We are dealing with a base64 string, probably
-          echo "[Debug] Decoding supposedly base64 key"
-          f=$(mktemp)
-
-          echo "[Debug] Decoding to $f"
-          (cat "$kf" | base64 -d > "$f") || echo "decoding failed"
-
-          echo "[Debug] Find project line in decripted key"
-          line=$(grep -F "$prefix" "$f" || echo '')
-          
-          echo "::set-output name=key_is_encrypted::true"
-        else
-          echo "::set-output name=key_is_encrypted::false"
-        fi
-        
-        if [ -z "$line" ]; then
-          echo "[Debug] We couldn\'t find \'$prefix\' string in the key file, nor in the decoded version of it. Trying without setting the project id..."
-        else
-          echo "[Debug] Remove prefix, double quotes, columns and commas, and new lines from line"
-          project_id=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
-
-          echo "[Debug] Project id found: $project_id"
-          echo "::set-output name=project_id::$project_id"
-        fi
-
-    - name: Running gsutil command if OSX host
+    - name: Running gsutil command [OSX]
       if: runner.os == 'macOS'
       shell: bash
       run: |
@@ -138,7 +117,7 @@ runs:
           rm -r "$gsutil_user_directory"
         fi
 
-    - name: Running gsutil command if non-OSX host
+    - name: Running gsutil command [non-OSX]
       if: runner.os != 'macOS'
       uses: actions-hub/gcloud@master
       env:
