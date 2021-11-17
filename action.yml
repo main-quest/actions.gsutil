@@ -19,6 +19,7 @@ outputs:
 runs:
   using: "composite"
   steps:  
+    #OS/
     - name: Parse key [UNIX]
       id: parser_unix
       if: runner.os != 'Windows'
@@ -36,94 +37,47 @@ runs:
         s=$(wslpath "${{ github.action_path }}/parser.sh")
         chmod +x "$s"
         "$s" "${{ inputs.key }}"
+    #/OS
 
-    - name: Running gsutil command [OSX]
-      if: runner.os == 'macOS'
+
+    #OS/
+    # - name: Running gsutil command [OSX]
+    - name: Running gsutil command [UNIX]
+      # if: runner.os == 'macOS'
+      if: runner.os != 'Windows'
       shell: bash
       run: |
-        # Storing current dir, as gsutil needs to be ran from it
-        prev_working_dir="$(pwd)"
-
-        # Important to not use quotes
-        gsutil_user_directory="$HOME/.gsutil"
-        delete_gsutil_user_dir_after="false"
-
-        if [ ! -f "$gsutil_user_directory" ]; then
-          if [ ! -d "$gsutil_user_directory" ]; then
-            delete_gsutil_user_dir_after="true"
-          fi
-        fi
-
-        # Installing as per https://cloud.google.com/storage/docs/gsutil_install
-
-        echo "Installing in temp folder so we can simulate a docker image as much as we can (not affecting user environment too much)"
-        # Using 4.9 because starting with 5.0, Python 3 is needed, and most macOS have Python 2.7
-        file_name="gsutil_4.9.tar.gz"
-        url="https://storage.googleapis.com/pub/$file_name"
-        curl -O "$url"
-        install_dir=$(mktemp -d)
-        tar xfz "$file_name" -C "$install_dir"
-
-        gsutil_bin_dir="$install_dir"/gsutil
-        echo "Entering install dir: $gsutil_bin_dir"
-        cd "$gsutil_bin_dir" || exit 123
-
-        echo "Write key to dir"
-        key_path="$install_dir"/key.json
-
         key="${{ inputs.key }}"
         key_is_encrypted="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
-        if [[ "$key_is_encrypted" == "true" ]]; then
-          echo "$key" | base64 -d > "$key_path"
-        else
-          echo "$key" > "$key_path"
-        fi
-
-        echo "Get project id from previous step"
         project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
-
-        echo "Parse email"
-        prefix="\"client_email\":"
-        line=$(grep -F "$prefix" "$key_path" || echo '')
-        echo "[Debug] Remove prefix, double quotes, columns and commas, and new lines from line"
-        email=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
-        echo "Email is $email"
+        v_do="${{ inputs.do }}"
         
-        echo "Parse PK"
-        prefix="\"private_key\":"
-        line=$(grep -F "$prefix" "$key_path" || echo '')
-        echo "[Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!)"
-        pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g')
+        s="${{ github.action_path }}/gsutil_tool.sh"
+        chmod +x "$s"
+        "$s" "$key" "$key_is_encrypted" "$project_id" "$v_do"
 
-        echo "Write PK to file"
-        inner_key_path="$install_dir"/key-inner.json
-        printf "%b" "$pk" > "$inner_key_path"
-
-        echo "Override credentials inline"
-        cmd_proj="GSUtil:default_project_id=$project_id"
-        cmd_email="Credentials:gs_service_client_id=$email"
-        cmd_key="Credentials:gs_service_key_file=$inner_key_path"
+    - name: Running gsutil command [WIN]
+      if: runner.os == 'Windows'
+      shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      run: |
+        key="${{ inputs.key }}"
+        key_is_encrypted="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
+        project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
+        v_do="${{ inputs.do }}"
         
-        echo "Exiting install dir and returning to working dir: $prev_working_dir"
-        cd "$prev_working_dir"
+        s=$(wslpath "${{ github.action_path }}/gsutil_tool.sh")
+        chmod +x "$s"
+        "$s" "$key" "$key_is_encrypted" "$project_id" "$v_do"
+    #/OS
 
-        echo "Running: ${{ inputs.do }}"
-        "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ${{ inputs.do }}
-
-        echo "Deleting the install"
-        rm -r "$install_dir"
-
-        if [ "$delete_gsutil_user_dir_after" == "true" ]; then
-          echo "Deleting the auto-created directory by gsutil that didn't previously exist: $gsutil_user_directory"
-          rm -r "$gsutil_user_directory"
-        fi
-
-    - name: Running gsutil command [non-OSX]
-      if: runner.os != 'macOS'
-      uses: actions-hub/gcloud@master
-      env:
-        PROJECT_ID: ${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}
-        APPLICATION_CREDENTIALS: ${{ inputs.key }}
-      with:
-        args: ${{ inputs.do }}
-        cli: gsutil
+    # Dropping usage of this dockerized action (can only be used on linux atm 17 Nov 2021), since we can just reuse the one for macOS
+    # - name: Running gsutil command [UNIX]
+    #   if: runner.os != 'Windows' && runner.os != 'macOS'
+    #   uses: actions-hub/gcloud@master
+    #   env:
+    #     PROJECT_ID: ${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}
+    #     APPLICATION_CREDENTIALS: ${{ inputs.key }}
+    #   with:
+    #     args: ${{ inputs.do }}
+    #     cli: gsutil
+    #/OS
