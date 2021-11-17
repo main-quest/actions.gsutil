@@ -10,7 +10,7 @@ inputs:
 
 outputs:
   project: 
-    description: "The project id parsed from the key file"
+    description: "The project id parsed from the key file. Might be removed as it's not needed anymore in the internal implementation"
     value: ${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}
   # email: 
   #   description: "The email of the service account parsed from the key file"

@@ -44,54 +44,36 @@ else
     echo "$key" > "$key_path"
 fi
 
-echo "Parse email"
-prefix="\"client_email\":"
-line=$(grep -F "$prefix" "$key_path" || echo '')
-echo "[Debug] Remove prefix, double quotes, columns and commas, and new lines from line"
-email=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
-echo "Email is $email"
+# echo "Parse email"
+# prefix="\"client_email\":"
+# line=$(grep -F "$prefix" "$key_path" || echo '')
+# echo "[Debug] Remove prefix, double quotes, columns and commas, and new lines from line"
+# email=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
+# echo "Email is $email"
 
-echo "Parse PK"
-prefix="\"private_key\":"
-line=$(grep -F "$prefix" "$key_path" || echo '')
-echo "[Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!), and also any spaces"
-pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' -e 's/^[[:space:]]*//')
+# echo "Parse PK"
+# prefix="\"private_key\":"
+# line=$(grep -F "$prefix" "$key_path" || echo '')
+# echo "[Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!), and also any spaces"
+# pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' -e 's/^[[:space:]]*//')
 
-echo "Write PK to file"
-inner_key_path="$install_dir"/key-inner.json
-printf "%b" "$pk" > "$inner_key_path"
+# echo "Write PK to file"
+# inner_key_path="$install_dir"/key-inner.json
+# printf "%b" "$pk" > "$inner_key_path"
 
 echo "Override credentials inline"
-cmd_proj="GSUtil:default_project_id=$project_id"
-cmd_email="Credentials:gs_service_client_id=$email"
-cmd_key="Credentials:gs_service_key_file=$inner_key_path"
-
-# TEMP
-# TEMP
-# TEMP
-echo "Inner key path: $inner_key_path"
+# cmd_proj="GSUtil:default_project_id=$project_id"
+# cmd_email="Credentials:gs_service_client_id=$email"
+# cmd_key="Credentials:gs_service_key_file=$inner_key_path"
 cmd_key="Credentials:gs_service_key_file=$key_path"
 
 echo "Exiting install dir and returning to working dir: $prev_working_dir"
 cd "$prev_working_dir" || exit 123
 
-# TEMP
-# TEMP
-# TEMP
-echo "$gsutil_bin_dir"/gsutil
-echo "$cmd_proj"
-echo "$cmd_email"
-echo "$cmd_key"
-echo "1"
-"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
-echo "2"
-"$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
-echo "3"
-"$gsutil_bin_dir"/gsutil -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
-exit 122
-
 echo "Running: $v_do"
-"$gsutil_bin_dir/gsutil -o $cmd_proj -o $cmd_email -o $cmd_key $v_do"
+# Commented: found out gsutil 5.5 only needs the key (since email and project are derived from them)
+# "$gsutil_bin_dir/gsutil -o $cmd_proj -o $cmd_email -o $cmd_key $v_do"
+"$gsutil_bin_dir/gsutil -o $cmd_key $v_do"
 
 
 echo "Deleting the install"
