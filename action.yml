@@ -21,7 +21,7 @@ runs:
   steps:  
     - name: Parse key [UNIX]
       id: parser_unix
-      if: runner.os != "Windows"
+      if: runner.os != 'Windows'
       shell: bash
       run: |
         s="${{ github.action_path }}/parser.sh"
@@ -30,7 +30,7 @@ runs:
 
     - name: Parse key [WIN]
       id: parser_win
-      if: runner.os == "Windows"
+      if: runner.os == 'Windows'
       shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         s=$(wslpath "${{ github.action_path }}/parser.sh")
