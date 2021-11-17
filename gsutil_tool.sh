@@ -54,8 +54,8 @@ echo "Email is $email"
 echo "Parse PK"
 prefix="\"private_key\":"
 line=$(grep -F "$prefix" "$key_path" || echo '')
-echo "[Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!)"
-pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g')
+echo "[Debug] Remove prefix, double quotes, columns and commas from line (keeping new lines!), and also any spaces"
+pk=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' -e 's/^[[:space:]]*//')
 
 echo "Write PK to file"
 inner_key_path="$install_dir"/key-inner.json
@@ -75,6 +75,7 @@ echo "$cmd_proj"
 echo "$cmd_email"
 echo "$cmd_key"
 "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" ls gs://gh-runs_main-quest_dbd-client-unity
+echo "Second"
 "$gsutil_bin_dir"/gsutil -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" "ls gs://gh-runs_main-quest_dbd-client-unity"
 exit 122
 
