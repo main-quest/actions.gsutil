@@ -66,10 +66,18 @@ cmd_proj="GSUtil:default_project_id=$project_id"
 cmd_email="Credentials:gs_service_client_id=$email"
 cmd_key="Credentials:gs_service_key_file=$inner_key_path"
 
+# TEMP
+# TEMP
+# TEMP
+echo "Inner key path: $inner_key_path"
+cmd_key="Credentials:gs_service_key_file=$key_path"
+
 echo "Exiting install dir and returning to working dir: $prev_working_dir"
 cd "$prev_working_dir" || exit 123
 
-# test
+# TEMP
+# TEMP
+# TEMP
 echo "$gsutil_bin_dir"/gsutil
 echo "$cmd_proj"
 echo "$cmd_email"
