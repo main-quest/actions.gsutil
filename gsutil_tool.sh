@@ -77,7 +77,9 @@ echo "Running: $v_do"
 
 # Note: disabling parallel processing as it may cause issues on macOS
 if [[ $OSTYPE == *"darwin"* ]]; then
-    "$gsutil_bin_dir/gsutil" -o "$cmd_key" -o "GSUtil:parallel_process_count=1" $v_do
+    cmd_pcount="GSUtil:parallel_process_count=1"
+    echo "OSTYPE is $OSTYPE, running with $cmd_pcount to avoid issues, as fork() is handled poorly by the apple frameworks"
+    "$gsutil_bin_dir/gsutil" -o "$cmd_key" -o "$cmd_pcount" $v_do
 else
     "$gsutil_bin_dir/gsutil" -o "$cmd_key" $v_do
 fi
