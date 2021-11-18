@@ -74,7 +74,13 @@ echo "Running: $v_do"
 # Commented: found out gsutil 5.5 only needs the key (since email and project are derived from them)
 # Note: the last command is specifically left unquoted so that gsutil will pick all spaces
 # "$gsutil_bin_dir/gsutil" -o "$cmd_proj" -o "$cmd_email" -o "$cmd_key" $v_do
-"$gsutil_bin_dir/gsutil" -o "$cmd_key" $v_do
+
+# Note: disabling parallel processing as it may cause issues on macOS
+if [[ $OSTYPE == *"darwin"* ]]; then
+    "$gsutil_bin_dir/gsutil" -o "$cmd_key" -o "GSUtil:parallel_process_count=1" $v_do
+else
+    "$gsutil_bin_dir/gsutil" -o "$cmd_key" $v_do
+fi
 
 
 echo "Deleting the install"
