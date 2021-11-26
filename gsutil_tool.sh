@@ -27,9 +27,16 @@ echo "Installing in temp folder so we can simulate a docker image as much as we 
 # file_name="gsutil_4.9.tar.gz"
 file_name="gsutil_5.5.tar.gz"
 url="https://storage.googleapis.com/pub/$file_name"
-curl -O "$url"
+file_path="/tmp/712.xia345webfo3298sm12e.tmpd/mq-gsutil/{$file_name}"
+# Download or reuse
+if [ ! -f "$file_path" ]; then
+    curl -o "$file_path" "$url"
+fi
 install_dir=$(mktemp -d)
-tar xfz "$file_name" -C "$install_dir"
+tar xfz "$file_path" -C "$install_dir"
+
+# Not removing the zip, so subsequent calls will not be downloading it again (that's why we use a fixed temp dir)
+# rm "$file_path"
 
 gsutil_bin_dir="$install_dir"/gsutil
 echo "Entering install dir: $gsutil_bin_dir"
