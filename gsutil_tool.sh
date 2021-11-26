@@ -27,7 +27,7 @@ echo "Installing in temp folder so we can simulate a docker image as much as we 
 # file_name="gsutil_4.9.tar.gz"
 file_name="gsutil_5.5.tar.gz"
 url="https://storage.googleapis.com/pub/$file_name"
-file_path="/tmp/712.xia345webfo3298sm12e.tmpd/mq-gsutil/{$file_name}"
+file_path="/tmp/712.xia345webfo3298sm12e.tmpd/mq-gsutil/$file_name"
 # Download or reuse
 if [ ! -f "$file_path" ]; then
     curl -o "$file_path" "$url"
