@@ -4,7 +4,7 @@ set -e
 
 key="$1"
 key_is_encrypted="$2"
-project_id="$3"
+# project_id="$3"
 v_do="$4"
 
 
