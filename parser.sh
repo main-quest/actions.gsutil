@@ -22,9 +22,9 @@ if [ -z "$line" ]; then
     echo "[Debug] Find project line in decripted key"
     line=$(grep -F "$prefix" "$f" || echo '')
     
-    echo "::set-output name=key_is_encrypted::true"
+    echo "key_is_encrypted=true" >> "$GITHUB_OUTPUT"
 else
-    echo "::set-output name=key_is_encrypted::false"
+    echo "key_is_encrypted=false" >> "$GITHUB_OUTPUT"
 fi
 
 if [ -z "$line" ]; then
@@ -34,5 +34,5 @@ else
     project_id=$(echo "$line" | sed -e "s/$prefix//g" -e 's/\"//g' -e 's/\://g' -e 's/\,//g' | xargs echo -n)
 
     echo "[Debug] Project id found: $project_id"
-    echo "::set-output name=project_id::$project_id"
+    echo "project_id=$project_id" >> "$GITHUB_OUTPUT"
 fi
