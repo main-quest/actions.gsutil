@@ -27,7 +27,7 @@ runs:
       run: |
         s="${{ github.action_path }}/parser.sh"
         chmod +x "$s"
-        "$s" "${{ inputs.key }}"
+        GITHUB_OUTPUT=$GITHUB_OUTPUT  "$s" "${{ inputs.key }}"
 
     - name: Parse key [WIN]
       id: parser_win
@@ -36,7 +36,7 @@ runs:
       run: |
         s=$(wslpath "${{ github.action_path }}/parser.sh")
         chmod +x "$s"
-        "$s" "${{ inputs.key }}"
+        GITHUB_OUTPUT=$GITHUB_OUTPUT "$s" "${{ inputs.key }}"
     #/OS
 
 
