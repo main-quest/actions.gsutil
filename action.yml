@@ -36,6 +36,10 @@ runs:
       run: |
         s=$(wslpath "${{ github.action_path }}/parser.sh")
         chmod +x "$s"
+        echo "Env22:"
+        env
+        echo "Env33:"
+
         GITHUB_OUTPUT=$GITHUB_OUTPUT "$s" "${{ inputs.key }}"
     #/OS
 
