@@ -29,13 +29,25 @@ runs:
         chmod +x "$s"
         "$s" "${{ inputs.key }}"
 
+    # - name: Parse key [WIN]
+    #   id: parser_win
+    #   if: runner.os == 'Windows'
+    #   # shell: wsl bash --noprofile --norc -euo pipefail -c "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      
+    #   # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+    #   shell: powershell
+    #   run: |
+    #     wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '${{ github.action_path }}/parser.sh')" && sed -i 's/\r$//' "$s" && chmod +x "$s" && "$s" "${{ inputs.key }}")"
+
+    #     wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '${{ github.action_path }}/parser.sh')" && sed -i 's/\r$//' "$s" && chmod +x "$s" && "$s" "${{ inputs.key }}")"
+
     - name: Parse key [WIN]
       id: parser_win
       if: runner.os == 'Windows'
       # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath "$GITHUB_OUTPUT")" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
-        s=$(wslpath "${{ github.action_path }}/parser.sh")
+        s="$(wslpath '${{ github.action_path }}/parser.sh')"
         chmod +x "$s"
         "$s" "${{ inputs.key }}"
     #/OS
@@ -61,14 +73,14 @@ runs:
       if: runner.os == 'Windows'
       # shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath "$GITHUB_OUTPUT")" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         key="${{ inputs.key }}"
         key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
         project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
         v_do="${{ inputs.do }}"
         
-        s=$(wslpath "${{ github.action_path }}/gsutil_tool.sh")
+        s="$(wslpath '${{ github.action_path }}/gsutil_tool.sh')"
         chmod +x "$s"
         "$s" "$key" "$key_is_encrypted" "$project_id" "$v_do"
     #/OS
