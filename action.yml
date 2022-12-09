@@ -45,7 +45,7 @@ runs:
       id: parser_win
       if: runner.os == 'Windows'
       # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath $(realpath '${{ env.GITHUB_OUTPUT }}'))" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         s="$(wslpath '${{ github.action_path }}/parser.sh')"
         chmod +x "$s"
@@ -73,7 +73,7 @@ runs:
       if: runner.os == 'Windows'
       # shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath $(realpath '${{ env.GITHUB_OUTPUT }}'))" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         key="${{ inputs.key }}"
         key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
