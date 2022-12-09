@@ -41,15 +41,56 @@ runs:
 
     #     wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '${{ github.action_path }}/parser.sh')" && sed -i 's/\r$//' "$s" && chmod +x "$s" && "$s" "${{ inputs.key }}")"
 
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+    # TODO actually try again the long form but using "$env:GITHUB_OUTPUT"
+
     - name: Parse key [WIN]
       id: parser_win
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         $s="$(wsl wslpath '${{ github.action_path }}/parser.sh')"
+        echo "Script debug: $s"
         wsl chmod +x "$s"
         wsl sed -i 's/\r$//' "$s"
-        $cmd = 'export GITHUB_OUTPUT="$(wslpath ''${{ env.GITHUB_OUTPUT }}'')"'
+        $cmd = 'export GITHUB_OUTPUT="$(wslpath '''
+        $cmd += "$env:GITHUB_OUTPUT"
+        $cmd += ''')"'
         $cmd += " && '$s'"
         $cmd += ' ''${{ inputs.key }}'''
         wsl bash --noprofile --norc -euo pipefail -c "$cmd"
@@ -80,9 +121,12 @@ runs:
         $v_do='${{ inputs.do }}'
 
         $s="$(wsl wslpath '${{ github.action_path }}/gsutil_tool.sh')"
+        echo "Script debug: $s"
         wsl chmod +x "$s"
         wsl sed -i 's/\r$//' "$s"
-        $cmd = 'export GITHUB_OUTPUT="$(wslpath ''${{ env.GITHUB_OUTPUT }}'')"'
+        $cmd = 'export GITHUB_OUTPUT="$(wslpath '''
+        $cmd += "$env:GITHUB_OUTPUT"
+        $cmd += ''')"'
         $cmd += " && '$s'"
         $cmd += ' ''${{ inputs.key }}'''
         $cmd += " '$key_is_encrypted'"
