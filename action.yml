@@ -25,9 +25,9 @@ runs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        s="${{ github.action_path }}/parser.sh"
+        s='${{ github.action_path }}/parser.sh'
         chmod +x "$s"
-        "$s" "${{ inputs.key }}"
+        "$s" '${{ inputs.key }}'
 
     # - name: Parse key [WIN]
     #   id: parser_win
@@ -44,12 +44,15 @@ runs:
     - name: Parse key [WIN]
       id: parser_win
       if: runner.os == 'Windows'
-      # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath $(realpath '${{ env.GITHUB_OUTPUT }}'))" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: powershell
       run: |
-        s="$(wslpath '${{ github.action_path }}/parser.sh')"
-        chmod +x "$s"
-        "$s" "${{ inputs.key }}"
+        $s="$(wsl wslpath '${{ github.action_path }}/parser.sh')"
+        wsl chmod +x "$s"
+        wsl sed -i 's/\r$//' "$s"
+        $cmd = 'export GITHUB_OUTPUT="$(wslpath ''${{ env.GITHUB_OUTPUT }}'')"'
+        $cmd += " && '$s'"
+        $cmd += ' ''${{ inputs.key }}'''
+        wsl bash --noprofile --norc -euo pipefail -c "$cmd"
     #/OS
 
 
@@ -60,29 +63,32 @@ runs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        key="${{ inputs.key }}"
-        key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
-        project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
-        v_do="${{ inputs.do }}"
+        key_is_encrypted='${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}'
+        project_id='${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}'
+        v_do='${{ inputs.do }}'
         
-        s="${{ github.action_path }}/gsutil_tool.sh"
+        s='${{ github.action_path }}/gsutil_tool.sh'
         chmod +x "$s"
-        "$s" "$key" "$key_is_encrypted" "$project_id" "$v_do"
+        "$s" '${{ inputs.key }}' "$key_is_encrypted" "$project_id" "$v_do"
 
     - name: Running gsutil command [WIN]
       if: runner.os == 'Windows'
-      # shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
-      shell: wsl bash --noprofile --norc -euo pipefail -c "export GITHUB_OUTPUT="$(wslpath $(realpath '${{ env.GITHUB_OUTPUT }}'))" && $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: powershell
       run: |
-        key="${{ inputs.key }}"
-        key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
-        project_id="${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}"
-        v_do="${{ inputs.do }}"
-        
-        s="$(wslpath '${{ github.action_path }}/gsutil_tool.sh')"
-        chmod +x "$s"
-        "$s" "$key" "$key_is_encrypted" "$project_id" "$v_do"
+        $key_is_encrypted='${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}'
+        $project_id='${{ steps.parser_unix.outputs.project_id }}${{ steps.parser_win.outputs.project_id }}'
+        $v_do='${{ inputs.do }}'
+
+        $s="$(wsl wslpath '${{ github.action_path }}/gsutil_tool.sh')"
+        wsl chmod +x "$s"
+        wsl sed -i 's/\r$//' "$s"
+        $cmd = 'export GITHUB_OUTPUT="$(wslpath ''${{ env.GITHUB_OUTPUT }}'')"'
+        $cmd += " && '$s'"
+        $cmd += ' ''${{ inputs.key }}'''
+        $cmd += " '$key_is_encrypted'"
+        $cmd += " '$project_id'"
+        $cmd += " '$v_do'"
+        wsl bash --noprofile --norc -euo pipefail -c "$cmd"
     #/OS
 
     # Dropping usage of this dockerized action (can only be used on linux atm 17 Nov 2021), since we can just reuse the one for macOS
