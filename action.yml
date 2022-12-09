@@ -84,7 +84,7 @@ runs:
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        $s="$(wsl bash --noprofile --norc -euo pipefail -c 'wslpath `"${{ github.action_path }}/parser.sh`"')"
+        $s="$(wsl bash --noprofile --norc -euo pipefail -c 'wslpath ''${{ github.action_path }}/parser.sh''')"
         echo "Script debug: $s"
         wsl bash --noprofile --norc -euo pipefail -c "chmod +x '$s'"
         wsl bash --noprofile --norc -euo pipefail -c "sed -i 's/\r`$//' '$s'"
@@ -117,7 +117,7 @@ runs:
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        $s="$(wsl bash --noprofile --norc -euo pipefail -c 'wslpath `"${{ github.action_path }}/gsutil_tool.sh`"')"
+        $s="$(wsl bash --noprofile --norc -euo pipefail -c 'wslpath ''${{ github.action_path }}/gsutil_tool.sh''')"
         echo "Script debug: $s"
         wsl bash --noprofile --norc -euo pipefail -c "chmod +x '$s'"
         wsl bash --noprofile --norc -euo pipefail -c "sed -i 's/\r`$//' '$s'"
