@@ -38,13 +38,13 @@ runs:
       run: |
         s=$(wslpath "${{ github.action_path }}/parser.sh")
         chmod +x "$s"
-        echo "Env123 wsl bash: $GITHUB_OUTPUT"
+        # echo "Env123 wsl bash: $GITHUB_OUTPUT"
         echo "Env123 wsl bash2: ${{ env.GITHUB_OUTPUT }}"
         echo "Env22 start:"
         env
         echo "Env22 end:"
 
-        GITHUB_OUTPUT="$GITHUB_OUTPUT" "$s" "${{ inputs.key }}"
+        GITHUB_OUTPUT="${{ env.GITHUB_OUTPUT }}" "$s" "${{ inputs.key }}"
     #/OS
 
 
