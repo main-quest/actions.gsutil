@@ -27,24 +27,17 @@ runs:
       run: |
         s="${{ github.action_path }}/parser.sh"
         chmod +x "$s"
-        echo "Env123 bash: $GITHUB_OUTPUT"
-        echo "Env123 bash2: ${{ env.GITHUB_OUTPUT }}"
-        GITHUB_OUTPUT="$GITHUB_OUTPUT"  "$s" "${{ inputs.key }}"
+        "$s" "${{ inputs.key }}"
 
     - name: Parse key [WIN]
       id: parser_win
       if: runner.os == 'Windows'
-      shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath "$GITHUB_OUTPUT")" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         s=$(wslpath "${{ github.action_path }}/parser.sh")
         chmod +x "$s"
-        # echo "Env123 wsl bash: $GITHUB_OUTPUT"
-        echo "Env123 wsl bash2: ${{ env.GITHUB_OUTPUT }}"
-        echo "Env22 start:"
-        env
-        echo "Env22 end:"
-
-        GITHUB_OUTPUT="${{ env.GITHUB_OUTPUT }}" "$s" "${{ inputs.key }}"
+        "$s" "${{ inputs.key }}"
     #/OS
 
 
@@ -66,7 +59,9 @@ runs:
 
     - name: Running gsutil command [WIN]
       if: runner.os == 'Windows'
-      shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      # shell: wsl bash --noprofile --norc -euo pipefail "$(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      # shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath '${{ env.GITHUB_OUTPUT }}')" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
+      shell: wsl bash --noprofile --norc -euo pipefail -c "GITHUB_OUTPUT="$(wslpath "$GITHUB_OUTPUT")" $(s="$(wslpath '{0}')" && sed -i 's/\r$//' "$s" && echo "$s")"
       run: |
         key="${{ inputs.key }}"
         key_is_encrypted="${{ steps.parser_unix.outputs.key_is_encrypted }}${{ steps.parser_win.outputs.key_is_encrypted }}"
