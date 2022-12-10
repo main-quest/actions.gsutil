@@ -16,12 +16,16 @@ if [ -z "$line" ]; then
     echo "[Debug] Decoding supposedly base64 key"
     f=$(mktemp)
 
-    echo "[Debug] Decoding $kf to $f"
-    base64 -d < "$kf" > "$f"
+    printf "[Debug] Replacing any potential literal '\\n' strings with an actual '\\n' char (LF): from %s to %s" "$kf" "$f"
+    sed 's/\\n/\n/g' "$kf" > "$f"
+
+    f2=$(mktemp)
+    echo "[Debug] Decoding $f to $f2"
+    base64 -d < "$f" > "$f2"
 
     echo "[Debug] Find project line in decripted key"
     set +e
-    line=$(grep -F "$prefix" "$f" || echo '')
+    line=$(grep -F "$prefix" "$f2" || echo '')
     set -e
     
     echo "key_is_encrypted=true" >> "$GITHUB_OUTPUT"
