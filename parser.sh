@@ -16,8 +16,10 @@ if [ -z "$line" ]; then
     echo "[Debug] Decoding supposedly base64 key"
     f=$(mktemp)
 
-    printf '[Debug] Replacing any potential "\\r\\n" strings (CRLF) with just "\\n" char (LF): from %s to %s' "$kf" "$f"
-    sed 's/\r\n/\n/g' "$kf" > "$f"
+    # sed cannot match "\n" because it's a line-by-line tool, but '$' can be used in the to-be-replaced section to signify (Unix) the end of line
+    # As per https://stackoverflow.com/a/44209944
+    printf '[Debug] Removing any "\\r" char from the end of the lines: from %s to %s' "$kf" "$f"
+    sed 's/\r$//g' "$kf" > "$f"
 
     # printf '[Debug] Replacing any potential literal "\\n" strings with an actual \\n char (LF): from %s to %s' "$kf" "$f"
     # sed 's/\\n/\n/g' "$kf" > "$f"
