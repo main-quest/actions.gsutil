@@ -1,12 +1,33 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 key="$1"
 key_is_encrypted="$2"
 # project_id="$3"
 v_do="$4"
 
+kf=$(mktemp)
+printf '[Debug] Interpret "\\n" strings as literal LF to %s' "$kf"
+echo -e "$key" > "$kf"
+
+install_dir=$(mktemp -d)
+echo "Creating install dir $install_dir"
+echo "Write key to install dir"
+key_path="$install_dir"/key.json
+if [[ "$key_is_encrypted" == "true" ]]; then
+    echo "[Debug] key is encrypted"
+    kff=$(mktemp)
+    # sed cannot match "\n" because it's a line-by-line tool, but '$' can be used in the to-be-replaced section to signify (Unix) the end of line
+    # As per https://stackoverflow.com/a/44209944
+    printf '[Debug] Removing any "\\r" char from the end of the lines: from %s to %s' "$kf" "$kff"
+    sed 's/\r$//g' "$kf" > "$kff"
+
+    echo "[Debug] Decoding $kff to $key_path"
+    base64 -d < "$kff" > "$key_path"
+else
+    cp -f "$kf" "$key_path"
+fi
 
 # Storing current dir, as gsutil needs to be ran from it
 prev_working_dir="$(pwd)"
@@ -26,15 +47,23 @@ fi
 echo "Installing in temp folder so we can simulate a docker image as much as we can (not affecting user environment too much)"
 # file_name="gsutil_4.9.tar.gz"
 file_name="gsutil_5.5.tar.gz"
+file_name_expected_md5="8ff64983d5d20708cfa42c2870ce2d55"
 url="https://storage.googleapis.com/pub/$file_name"
 dl_dir="/tmp/712.xia345webfo3298sm12e.tmpd/mq-gsutil"
 mkdir -p "$dl_dir"
 file_path="$dl_dir/$file_name"
 # Download or reuse
-if [ ! -f "$file_path" ]; then
+if [ -f "$file_path" ]; then
+    # Make sure to check the md5 calculated at the moment of the last change in the gsutil version string
+    md5="$(md5sum $file_path)"
+    md5="${md5%% *}"
+    if [ "$md5" != "$file_name_expected_md5" ]; then
+        echo "File at $file_path has wrong md5, downloading.."
+        curl -o "$file_path" "$url"
+    fi
+else
     curl -o "$file_path" "$url"
 fi
-install_dir=$(mktemp -d)
 tar xfz "$file_path" -C "$install_dir"
 
 # Not removing the zip, so subsequent calls will not be downloading it again (that's why we use a fixed temp dir)
@@ -42,16 +71,7 @@ tar xfz "$file_path" -C "$install_dir"
 
 gsutil_bin_dir="$install_dir"/gsutil
 echo "Entering install dir: $gsutil_bin_dir"
-cd "$gsutil_bin_dir" || exit 123
-
-echo "Write key to dir"
-key_path="$install_dir"/key.json
-
-if [[ "$key_is_encrypted" == "true" ]]; then
-    echo "$key" | base64 -d > "$key_path"
-else
-    echo "$key" > "$key_path"
-fi
+cd "$gsutil_bin_dir"
 
 # echo "Parse email"
 # prefix="\"client_email\":"
@@ -77,7 +97,7 @@ echo "Override credentials inline"
 cmd_key="Credentials:gs_service_key_file=$key_path"
 
 echo "Exiting install dir and returning to working dir: $prev_working_dir"
-cd "$prev_working_dir" || exit 123
+cd "$prev_working_dir"
 
 echo "Running: $v_do"
 # Commented: found out gsutil 5.5 only needs the key (since email and project are derived from them)

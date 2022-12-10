@@ -1,9 +1,13 @@
 #!/bin/bash
 
-set -euox pipefail
+set -euo pipefail
+
+key="$1"
 
 kf=$(mktemp)
-echo -e "$1" > "$kf"
+printf '[Debug] Interpret "\\n" strings as literal LF to %s' "$kf"
+echo -e "$key" > "$kf"
+
 prefix="\"project_id\":"
 
 # Important to do this, as grep returns non-zero if no match is found
