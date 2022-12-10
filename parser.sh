@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euox pipefail
 
 kf=$(mktemp)
 echo "$1" > "$kf"
@@ -16,11 +16,13 @@ if [ -z "$line" ]; then
     echo "[Debug] Decoding supposedly base64 key"
     f=$(mktemp)
 
-    echo "[Debug] Decoding to $f"
-    (cat "$kf" | base64 -d > "$f") || echo "decoding failed"
+    echo "[Debug] Decoding $kf to $f"
+    base64 -d < "$kf" > "$f"
 
     echo "[Debug] Find project line in decripted key"
+    set +e
     line=$(grep -F "$prefix" "$f" || echo '')
+    set -e
     
     echo "key_is_encrypted=true" >> "$GITHUB_OUTPUT"
 else
