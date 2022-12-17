@@ -20,7 +20,7 @@ if [ -z "$line" ]; then
     echo "[Debug] Decoding supposedly base64 key"
     f=$(mktemp)
 
-    # sed cannot match "\n" because it's a line-by-line tool, but '$' can be used in the to-be-replaced section to signify (Unix) the end of line
+    # sed cannot match "\n" because it's a line-by-line tool, but '$' can be used in the to-be-replaced section to signify the (Unix) end of line
     # As per https://stackoverflow.com/a/44209944
     printf '[Debug] Removing any "\\r" char from the end of the lines: from %s to %s' "$kf" "$f"
     sed 's/\r$//g' "$kf" > "$f"
