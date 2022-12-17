@@ -45,11 +45,13 @@ fi
 # Installing as per https://cloud.google.com/storage/docs/gsutil_install
 
 echo "Installing in temp folder so we can simulate a docker image as much as we can (not affecting user environment too much)"
-# file_name="gsutil_4.9.tar.gz"
-file_name="gsutil_5.5.tar.gz"
-file_name_expected_md5="8ff64983d5d20708cfa42c2870ce2d55"
+# file_name="gsutil_5.5.tar.gz"
+# file_name_expected_md5="8ff64983d5d20708cfa42c2870ce2d55"
+file_name="gsutil_5.17.tar.gz"
+file_name_expected_md5="3a3f843657f7604f4c313d9e5e51b706"
+
 url="https://storage.googleapis.com/pub/$file_name"
-dl_dir="/tmp/712.xia345webfo3298sm12e.tmpd/mq-gsutil"
+dl_dir="/tmp/712.xia.${file_name_expected_md5}.tmpd/mq-gsutil"
 mkdir -p "$dl_dir"
 file_path="$dl_dir/$file_name"
 # Download or reuse
