@@ -112,7 +112,7 @@ if [[ $OSTYPE == *"darwin"* ]]; then
     echo "OSTYPE is $OSTYPE, running with $cmd_pcount to avoid issues, as fork() is handled poorly by the apple frameworks"
     "$gsutil_bin_dir/gsutil" -o "$cmd_key" -o "$cmd_pcount" $v_do
 else
-    "$gsutil_bin_dir/gsutil" -o "$cmd_key" "$v_do"
+    "$gsutil_bin_dir/gsutil" -o "$cmd_key" $v_do
 fi
 
 
